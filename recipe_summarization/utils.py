@@ -3,8 +3,8 @@ import os
 from sklearn.model_selection import train_test_split
 import _pickle as pickle
 
-import config
-from constants import empty, eos, FN0
+import recipe_summarization.config as config
+from recipe_summarization.constants import empty, eos, FN0
 
 
 def join_ingredients(ingredients_listlist):

@@ -4,10 +4,10 @@ from os import path
 from nltk.tokenize import word_tokenize
 from nltk import download
 from tqdm import tqdm
-
-import config
-import prep_data
-from parse_ingredients import parse_ingredient_list
+import pandas as pd
+import recipe_summarization.config as config
+import recipe_summarization.prep_data as prep_data
+from recipe_summarization.parse_ingredients import parse_ingredient_list
 
 
 def tokenize_sentence(sentence):
@@ -61,11 +61,56 @@ def load_recipes():
     return recipes
 
 
-def main():
-    """Tokenize recipes."""
-    recipes = prep_data.load_recipes()
-    text_sum_data = tokenize_recipes(recipes)
-    pickle_recipes(text_sum_data)
+def get_tokenized(recipes):
+    tokenized = []
 
-if __name__ == '__main__':
-    main()
+    for r in tqdm(recipes.values()):
+        if recipe_is_complete(r):
+            ingredients = '; '.join(parse_ingredient_list(r['ingredients'])) + '; '
+            tokenized.append((
+                tokenize_sentence(r['title']),
+                tokenize_sentence(ingredients) + tokenize_sentence(r['instructions'])))
+
+    return tokenized
+
+
+# Download punkt NLTK package (use d for download, punkt as identifier and q for quit.)
+
+"""### Dataframe and Feature Creation"""
+
+
+# Build dataframe (we will not use the recipe images or id's)
+def make_dataframe(tokenized):
+    colnames = ['title', 'ingredients', 'instructions']
+    df = pd.DataFrame(columns=colnames)
+
+    titles = []
+
+    for recipe in tokenized:
+        titles.append(recipe[0])
+
+    df['title'] = titles
+
+    ingredients_and_instructions = []
+
+    for recipe in tokenized:
+        ingredients_and_instructions.append(recipe[1])
+
+    ingredients_and_instructions_lists = []
+
+    for recipe in ingredients_and_instructions:
+        list_of_strings = recipe.split(';')
+        ingredients_and_instructions_lists.append(list_of_strings)
+
+    instructions = []
+    ingredients = []
+
+    for recipe in ingredients_and_instructions_lists:
+        instructions.append(recipe[-1])
+        ingredients.append(recipe[0:-1])
+
+    df['instructions'] = instructions
+    df['ingredients'] = ingredients
+    df['separator'] = '</>separator</>'
+
+    return df

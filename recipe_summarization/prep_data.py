@@ -11,9 +11,9 @@ import numpy as np
 from textwrap import wrap
 from scipy import ndimage, misc
 
-import config
-from type import RecipeContainer, DataContainer
-from utils import url_to_filename
+import recipe_summarization.config as config
+from recipe_summarization.type import RecipeContainer, DataContainer
+from recipe_summarization.utils import url_to_filename
 
 # import matplotlib using agg backend
 import matplotlib as mpl
